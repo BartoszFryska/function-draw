@@ -28,39 +28,21 @@ double countFunction(double x, double y) {
 	return x * x + y * y;
 }
 
-double xmax = 1;
-double xmin = -1;
-double ymax = 1;
-double ymin = -1;
-int sample = 50;
+void RecountFunctionIntoData ( vector <vector <double> > funValues ) {
 
-GUIMyFrame1::GUIMyFrame1(wxWindow* parent)
-	:
-	MyFrame1(parent)
-{
-	m_button_load_geometry->SetLabel(_("Wczytaj Geometri\u0119"));
-	m_staticText25->SetLabel(_("Obr\u00F3t X:"));
-	m_staticText27->SetLabel(_("Obr\u00F3t Y:"));
-	m_staticText29->SetLabel(_("Obr\u00F3t Z:"));
+	double xmax = 1;
+	double xmin = -1; ///////////////////// this section will be pulled form user input
+	double ymax = 1;
+	double ymin = -1;
+	double zmax = 1;
+	double zmin = -1;
 
-	WxSB_TranslationX->SetRange(0, 200); WxSB_TranslationX->SetValue(100);
-	WxSB_TranslationY->SetRange(0, 200); WxSB_TranslationY->SetValue(100);
-	WxSB_TranslationZ->SetRange(0, 200); WxSB_TranslationZ->SetValue(134);
-
-	WxSB_RotateX->SetRange(0, 360); WxSB_RotateX->SetValue(0);
-	WxSB_RotateY->SetRange(0, 360); WxSB_RotateY->SetValue(0);
-	WxSB_RotateZ->SetRange(0, 360); WxSB_RotateZ->SetValue(44);
-
-	WxSB_ScaleX->SetRange(1, 200); WxSB_ScaleX->SetValue(100);
-	WxSB_ScaleY->SetRange(1, 200); WxSB_ScaleY->SetValue(100);
-	WxSB_ScaleZ->SetRange(1, 200); WxSB_ScaleZ->SetValue(100);
+	int sample = 50;
+	double sampleNormal = std::max(funValues.size(), funValues[0].size()) / sample;
 
 	double move = std::max(((xmax - xmin) / sample), (ymax - ymin) / sample);
 	double movex = std::min((xmax - xmin), move);
 	double movey = std::min((ymax - ymin), move);
-	double zmax = 1;
-	double zmin = -1;
-
 
 	for (double x = xmin; x <= (xmax); x += movex) {
 
@@ -70,95 +52,142 @@ GUIMyFrame1::GUIMyFrame1(wxWindow* parent)
 			double z1 = countFunction(x, y + movey);
 			double z2 = countFunction(x + movex, y);
 
-			data.push_back(Segment(Point(x, y, z), Point(x, y + movey, z1), Color(255, 0, 255)));
-			data.push_back(Segment(Point(x, y, z), Point(x + movex, y, z2), Color(255, 0, 255)));
+			Color c1(255, 0, 255);
+			Color c2(255, 0, 255);
+
+			if (z > zmax) {
+
+				z = zmax;
+				c1 = c2 = Color(0, 0, 0);
+			}
+
+			if (z < zmin) {
+
+				z = zmin;
+				c1 = c2 = Color(0, 0, 0);
+			}
+
+			if (z1 > zmax) {
+
+				z1 = zmax;
+				c1 = Color(0, 0, 0);
+			}
+
+			if (z1 < zmin) {
+
+				z1 = zmin;
+				c1 = Color(0, 0, 0);
+			}
+
+			if (z2 > zmax) {
+
+				z2 = zmax;
+				c2 = Color(0, 0, 0);
+			}
+
+			if (z2 < zmin) {
+
+				z2 = zmin;
+				c2 = Color(0, 0, 0);
+			}
+
+			data.push_back(Segment(Point(x, y, z), Point(x, y + movey, z1), c1));
+			data.push_back(Segment(Point(x, y, z), Point(x + movex, y, z2), c2));
 		}
 		double z = countFunction(x, ymax);
 		double z3 = countFunction(x + movex, ymax);
 
-		data.push_back(Segment(Point(x, ymax, z), Point(x + movex, ymax, z3), Color(255, 0, 255)));
+		Color c3(255, 0, 255);
+
+		if (z > zmax) {
+
+			z = zmax;
+			c3 = Color(0, 0, 0);
+		}
+
+		if (z < zmin) {
+
+			z = zmin;
+			c3 = Color(0, 0, 0);
+		}
+
+		if (z3 > zmax) {
+
+			z3 = zmax;
+			c3 = Color(0, 0, 0);
+		}
+
+		if (z3 < zmin) {
+
+			z3 = zmin;
+			c3 = Color(0, 0, 0);
+		}
+
+		data.push_back(Segment(Point(x, ymax, z), Point(x + movex, ymax, z3), c3));
 	}
 
 	for (double y = ymin; y <= ymax; y += movey) {
 
 		double z = countFunction(xmax, y);
 		double z3 = countFunction(xmax, y + movey);
+		Color c3(255, 0, 255);
 
-		data.push_back(Segment(Point(xmax, y, z), Point(xmax, y + movey, z3), Color(255, 0, 255)));
+		if (z > zmax) {
+
+			z = zmax;
+			c3 = Color(0, 0, 0);
+		}
+
+		if (z < zmin) {
+
+			z = zmin;
+			c3 = Color(0, 0, 0);
+		}
+
+		if (z3 > zmax) {
+
+			z3 = zmax;
+			c3 = Color(0, 0, 0);
+		}
+
+		if (z3 < zmin) {
+
+			z3 = zmin;
+			c3 = Color(0, 0, 0);
+		}
+
+		data.push_back(Segment(Point(xmax, y, z), Point(xmax, y + movey, z3), c3));
 	}
 
-	double grid = std::max(xmax - xmin, std::max(ymax - ymin, zmax - zmin)) / 10;
+	double grid = std::max(xmax - xmin, std::max(ymax - ymin, zmax - zmin)) / 20;
 
-	data.push_back(Segment(Point(xmin, 0, 0), Point(xmax, 0, 0), Color(255, 0, 0)));
+	data.push_back(Segment(Point(xmin, 0, (zmax + zmin) / 2), Point(xmax, 0, (zmax + zmin) / 2), Color(255, 0, 0)));
 	for (double i = 0; i < M_PI / 2; i += 0.3) {
-		data.push_back(Segment(Point(xmax - grid / 2, 0.03 * sqrt(1 - pow(sin(i), 2)), 0.03 * sqrt(1 - pow(cos(i), 2))), Point(1, 0, 0), Color(255, 0, 0)));
-		data.push_back(Segment(Point(xmax - grid / 2, -0.03 * sqrt(1 - pow(sin(i), 2)), -0.03 * sqrt(1 - pow(cos(i), 2))), Point(1, 0, 0), Color(255, 0, 0)));
-		data.push_back(Segment(Point(xmax - grid / 2, 0.03 * sqrt(1 - pow(sin(i), 2)), -0.03 * sqrt(1 - pow(cos(i), 2))), Point(1, 0, 0), Color(255, 0, 0)));
-		data.push_back(Segment(Point(xmax - grid / 2, -0.03 * sqrt(1 - pow(sin(i), 2)), 0.03 * sqrt(1 - pow(cos(i), 2))), Point(1, 0, 0), Color(255, 0, 0)));
+		data.push_back(Segment(Point(xmax - grid / 2, grid / 16 * sqrt(1 - pow(sin(i), 2)), grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(xmax, 0, (zmax + zmin) / 2), Color(255, 0, 0)));
+		data.push_back(Segment(Point(xmax - grid / 2, -grid / 16 * sqrt(1 - pow(sin(i), 2)), -grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(xmax, 0, (zmax + zmin) / 2), Color(255, 0, 0)));
+		data.push_back(Segment(Point(xmax - grid / 2, grid / 16 * sqrt(1 - pow(sin(i), 2)), -grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(xmax, 0, (zmax + zmin) / 2), Color(255, 0, 0)));
+		data.push_back(Segment(Point(xmax - grid / 2, -grid / 16 * sqrt(1 - pow(sin(i), 2)), grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(xmax, 0, (zmax + zmin) / 2), Color(255, 0, 0)));
 	}
 
-	data.push_back(Segment(Point(0, -1, 0), Point(0, 1, 0), Color(0, 255, 0)));
+	data.push_back(Segment(Point(0, ymin, (zmax + zmin) / 2), Point(0, ymax, (zmax + zmin) / 2), Color(0, 255, 0)));
 	for (double i = 0; i < M_PI / 2; i += 0.3) {
-		data.push_back(Segment(Point(0.03 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, 0.03 * sqrt(1 - pow(cos(i), 2))), Point(0, 1, 0), Color(0, 255, 0)));
-		data.push_back(Segment(Point(-0.03 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, 0.03 * sqrt(1 - pow(cos(i), 2))), Point(0, 1, 0), Color(0, 255, 0)));
-		data.push_back(Segment(Point(-0.03 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, -0.03 * sqrt(1 - pow(cos(i), 2))), Point(0, 1, 0), Color(0, 255, 0)));
-		data.push_back(Segment(Point(0.03 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, -0.03 * sqrt(1 - pow(cos(i), 2))), Point(0, 1, 0), Color(0, 255, 0)));
+		data.push_back(Segment(Point(grid / 16 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(0, ymax, (zmax + zmin) / 2), Color(0, 255, 0)));
+		data.push_back(Segment(Point(-grid / 16 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(0, ymax, (zmax + zmin) / 2), Color(0, 255, 0)));
+		data.push_back(Segment(Point(-grid / 16 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, -grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(0, ymax, (zmax + zmin) / 2), Color(0, 255, 0)));
+		data.push_back(Segment(Point(grid / 16 * sqrt(1 - pow(sin(i), 2)), ymax - grid / 2, -grid / 16 * sqrt(1 - pow(cos(i), 2)) + (zmax + zmin) / 2), Point(0, ymax, (zmax + zmin) / 2), Color(0, 255, 0)));
 	}
 
-	data.push_back(Segment(Point(0, 0, -1), Point(0, 0, 1), Color(0, 0, 255)));
+	data.push_back(Segment(Point(0, 0, zmin), Point(0, 0, zmax), Color(0, 0, 255)));
 	for (double i = 0; i < M_PI / 2; i += 0.3) {
-		data.push_back(Segment(Point(0.03 * sqrt(1 - pow(cos(i), 2)), 0.03 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, 1), Color(0, 0, 255)));
-		data.push_back(Segment(Point(-0.03 * sqrt(1 - pow(cos(i), 2)), 0.03 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, 1), Color(0, 0, 255)));
-		data.push_back(Segment(Point(-0.03 * sqrt(1 - pow(cos(i), 2)), -0.03 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, 1), Color(0, 0, 255)));
-		data.push_back(Segment(Point(0.03 * sqrt(1 - pow(cos(i), 2)), -0.03 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, 1), Color(0, 0, 255)));
+		data.push_back(Segment(Point(grid / 16 * sqrt(1 - pow(cos(i), 2)), grid / 16 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, zmax), Color(0, 0, 255)));
+		data.push_back(Segment(Point(-grid / 16 * sqrt(1 - pow(cos(i), 2)), grid / 16 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, zmax), Color(0, 0, 255)));
+		data.push_back(Segment(Point(-grid / 16 * sqrt(1 - pow(cos(i), 2)), -grid / 16 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, zmax), Color(0, 0, 255)));
+		data.push_back(Segment(Point(grid / 16 * sqrt(1 - pow(cos(i), 2)), -grid / 16 * sqrt(1 - pow(sin(i), 2)), zmax - grid / 2), Point(0, 0, zmax), Color(0, 0, 255)));
 	}
 }
 
 void GUIMyFrame1::WxPanel_Repaint(wxUpdateUIEvent& event)
 {
-	Repaint();
-}
-
-void GUIMyFrame1::m_button_load_geometry_click(wxCommandEvent& event)
-{
-	wxFileDialog WxOpenFileDialog(this, wxT("Choose a file"), wxT(""), wxT(""), wxT("Geometry file (*.geo)|*.geo"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-
-	getMinYMaxY();
-
-	if (WxOpenFileDialog.ShowModal() == wxID_OK)
-	{
-		double x1, y1, z1, x2, y2, z2;
-		int r, g, b;
-
-		std::ifstream in(WxOpenFileDialog.GetPath().ToAscii());
-		if (in.is_open())
-		{
-			data.clear();
-			while (!in.eof())
-			{
-				in >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> r >> g >> b;
-				data.push_back(Segment(Point(x1, y1, z1), Point(x2, y2, z2), Color(r, g, b)));
-			}
-			in.close();
-		}
-	}
-}
-
-void GUIMyFrame1::Scrolls_Updated(wxScrollEvent& event)
-{
-	WxST_TranslationX->SetLabel(wxString::Format(wxT("%g"), (WxSB_TranslationX->GetValue() - 100) / 50.0));
-	WxST_TranslationY->SetLabel(wxString::Format(wxT("%g"), (WxSB_TranslationY->GetValue() - 100) / 50.0));
-	WxST_TranslationZ->SetLabel(wxString::Format(wxT("%g"), (WxSB_TranslationZ->GetValue() - 100) / 50.0));
-
-	WxST_RotateX->SetLabel(wxString::Format(wxT("%d"), WxSB_RotateX->GetValue()));
-	WxST_RotateY->SetLabel(wxString::Format(wxT("%d"), WxSB_RotateY->GetValue()));
-	WxST_RotateZ->SetLabel(wxString::Format(wxT("%d"), WxSB_RotateZ->GetValue()));
-
-	WxST_ScaleX->SetLabel(wxString::Format(wxT("%g"), WxSB_ScaleX->GetValue() / 100.0));
-	WxST_ScaleY->SetLabel(wxString::Format(wxT("%g"), WxSB_ScaleY->GetValue() / 100.0));
-	WxST_ScaleZ->SetLabel(wxString::Format(wxT("%g"), WxSB_ScaleZ->GetValue() / 100.0));
-
-
 	Repaint();
 }
 
@@ -267,17 +296,16 @@ void GUIMyFrame1::Repaint()
 
 	getMinYMaxY();
 
-	double colorR = 255;
-	double colorB = 0;
+	//double colorR = 255;
+	//double colorB = 0;
 
 	for (int i = 0; i < data.size(); i++) {
 
 		Vector4 begin, end;
 
-		colorR = 255 * ((maxY - data[i].begin.z) * 10000 / (maxY - minY)) / 10000;
-		colorB = 255 * ((data[i].begin.z - minY) * 10000 / (maxY - minY)) / 10000;
-
-		BufferedDC.SetPen(wxPen(wxColour(colorR, 0, colorB)));
+		//colorR = 255 * ((maxY - data[i].begin.z) * 10000 / (maxY - minY)) / 10000;
+		//colorB = 255 * ((data[i].begin.z - minY) * 10000 / (maxY - minY)) / 10000;
+		//BufferedDC.SetPen(wxPen(wxColour(colorR, 0, colorB)));
 
 		BufferedDC.SetPen(wxPen(wxColour(data[i].color.R, data[i].color.G, data[i].color.B)));
 
