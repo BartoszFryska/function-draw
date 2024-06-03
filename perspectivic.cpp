@@ -1,44 +1,17 @@
-#include "GUIMyFrame1.h"
-#include <vector>
-#include <fstream>
-#include "vecmat.h"
-#include <math.h>
-#include <iostream>
-
-struct Point {
-	float x, y, z;
-	Point(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-};
-
-struct Color {
-	int R, G, B;
-	Color(int _R, int _G, int _B) : R(_R), G(_G), B(_B) {}
-};
-
-struct Segment {
-	Point begin, end;
-	Color color;
-	Segment(Point _begin, Point _end, Color _color) : begin(_begin), end(_end), color(_color) {}
-};
-
-std::vector<Segment> data;
-
-double countFunction(double x, double y) {
-
+double Perspectivic::countFunction(double x, double y) {
 	return x * x + y * y;
 }
 
-void RecountFunctionIntoData ( vector <vector <double> > funValues ) {
+void Perspectivic::RecountFunctionIntoData(vector<vector<double>> funValues) {
 
 	double xmax = 1;
-	double xmin = -1; ///////////////////// this section will be pulled form user input
+	double xmin = -1;
 	double ymax = 1;
 	double ymin = -1;
 	double zmax = 1;
 	double zmin = -1;
 
 	int sample = 50;
-	double sampleNormal = std::max(funValues.size(), funValues[0].size()) / sample;
 
 	double move = std::max(((xmax - xmin) / sample), (ymax - ymin) / sample);
 	double movex = std::min((xmax - xmin), move);
@@ -186,12 +159,7 @@ void RecountFunctionIntoData ( vector <vector <double> > funValues ) {
 	}
 }
 
-void GUIMyFrame1::WxPanel_Repaint(wxUpdateUIEvent& event)
-{
-	Repaint();
-}
-
-Matrix4 GUIMyFrame1::XRotation(double alpha) {
+Matrix4 Perspectivic::XRotation(double alpha) {
 
 	Matrix4 matrix;
 	alpha = ((alpha + 252) * M_PI) / 180.0;
@@ -206,7 +174,7 @@ Matrix4 GUIMyFrame1::XRotation(double alpha) {
 	return matrix;
 }
 
-Matrix4 GUIMyFrame1::YRotation(double alpha) {
+Matrix4 Perspectivic::YRotation(double alpha) {
 
 	Matrix4 matrix;
 	alpha = (alpha * M_PI) / 180.0;
@@ -221,7 +189,7 @@ Matrix4 GUIMyFrame1::YRotation(double alpha) {
 	return matrix;
 }
 
-Matrix4 GUIMyFrame1::ZRotation(double alpha) {
+Matrix4 Perspectivic::ZRotation(double alpha) {
 
 	Matrix4 matrix;
 	alpha = (alpha * M_PI) / 180.0;
@@ -236,7 +204,7 @@ Matrix4 GUIMyFrame1::ZRotation(double alpha) {
 	return matrix;
 }
 
-void GUIMyFrame1::GenerateTransformMatrix() {
+void Perspectivic::GenerateTransformMatrix(wxPanel* drawingPanel) {
 
 	Matrix4 m1;
 	m1.data[0][0] = 1;
@@ -244,30 +212,30 @@ void GUIMyFrame1::GenerateTransformMatrix() {
 	m1.data[3][2] = 1.0 / 2.0;
 
 	Matrix4 m2;
-	m2.data[0][0] = WxPanel->GetSize().GetWidth() / 2;
-	m2.data[1][1] = -WxPanel->GetSize().GetHeight() / 2;
-	m2.data[0][3] = WxPanel->GetSize().GetWidth() / 2;
-	m2.data[1][3] = WxPanel->GetSize().GetHeight() / 2;
+	m2.data[0][0] = drawingPanel->GetSize().GetWidth() / 2;
+	m2.data[1][1] = -drawingPanel->GetSize().GetHeight() / 2;
+	m2.data[0][3] = drawingPanel->GetSize().GetWidth() / 2;
+	m2.data[1][3] = drawingPanel->GetSize().GetHeight() / 2;
 
 	Matrix4 matrix; // transformata skalowania
-	matrix.data[0][0] = WxSB_ScaleX->GetValue() / 100.0;
-	matrix.data[1][1] = WxSB_ScaleY->GetValue() / 100.0;
-	matrix.data[2][2] = WxSB_ScaleZ->GetValue() / 100.0;
+	matrix.data[0][0] = 1;
+	matrix.data[1][1] = 1;
+	matrix.data[2][2] = 1;
 
-	Matrix4 matrix2; // transformata przesuni�cia
+	Matrix4 matrix2; // transformata przesuniecia
 	matrix2.data[0][0] = matrix2.data[1][1] = matrix2.data[2][2] = 1;
-	matrix2.data[0][3] = (WxSB_TranslationX->GetValue() - 100.0) / 50;
-	matrix2.data[1][3] = (WxSB_TranslationY->GetValue() - 100.0) / 50;
-	matrix2.data[2][3] = (WxSB_TranslationZ->GetValue() - 100.0) / 50;
+	matrix2.data[0][3] = 0;
+	matrix2.data[1][3] = 0;
+	matrix2.data[2][3] = 0;
 
 	Matrix4 matrix3; // transformata obrotu
-	matrix3 = XRotation(WxSB_RotateX->GetValue()) * YRotation(WxSB_RotateY->GetValue()) * ZRotation(WxSB_RotateZ->GetValue());
+	matrix3 = XRotation(0) * YRotation(0) * ZRotation(44);
 
 	t = matrix2 * matrix3 * matrix;
 	t1 = m2 * m1;
 }
 
-void GUIMyFrame1::getMinYMaxY() {
+void Perspectivic::getMinYMaxY() {
 
 	if (!(maxY == -1.0e30 && minY == 1.0e30)) {
 
@@ -281,18 +249,18 @@ void GUIMyFrame1::getMinYMaxY() {
 	}
 }
 
-void GUIMyFrame1::Repaint()
+void Perspectivic::Repaint(wxPanel* drawingPanel)
 {
 	// tu rysowac
-	wxClientDC DC(WxPanel);
+	wxClientDC DC(drawingPanel);
 	wxBufferedDC BufferedDC(&DC);
 	int width;
 	int height;
-	WxPanel->GetSize(&width, &height);
+	drawingPanel->GetSize(&width, &height);
 	BufferedDC.SetBackground(wxBrush(wxColour("white")));
 	BufferedDC.Clear();
 
-	GenerateTransformMatrix();
+	GenerateTransformMatrix(drawingPanel);
 
 	getMinYMaxY();
 
